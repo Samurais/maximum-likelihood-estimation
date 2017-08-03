@@ -10,4 +10,10 @@ https://github.com/Samurais/Natural-Language-Processing-Language-Model
 
 Implemented a language model for a class project in Python which uses Maximum Likelihood Estimation and Laplace Smoothing to automatically generate language.
 
-## [](./logreg)
+## [Train MNIST with logreg](./logreg)
+
+## linear_regression_tensorflow.py
+
+```
+python linear_regression_tensorflow.py
+```

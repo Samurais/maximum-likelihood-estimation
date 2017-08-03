@@ -149,7 +149,9 @@ class LogisticRegression:
             raise LogRegError('Input data are wrong!')
         # Calculate the desired probability array
         # http://alturl.com/8kues
-        return 1.0 / (1.0 + numpy.exp(-X.dot(self.__b) - self.__a))
+        result = 1.0 / (1.0 + numpy.exp(-X.dot(self.__b) - self.__a))
+        print("transform", result)
+        return result
 
     def predict(self, X):
         '''
@@ -201,6 +203,7 @@ class LogisticRegression:
         iterations_number = 1  # count of the number of steps (iterations) of the algorithm
         while not stop:  # until the break criterion is fulfilled, continue training
             gradient = self.__calculate_gradient(X, y)  # calculate the gradient at the current point
+            print('fit gradient', gradient)
             lr = self.__find_best_lr(X, y, gradient, lr_max)  # calculate the optimal step in the gradient direction
             self.__a = self.__a + lr * gradient[0]  # correct the free member of the logistic regression
             self.__b = self.__b + lr * gradient[1]  # correct logistic regression coefficients
@@ -240,6 +243,7 @@ class LogisticRegression:
         '''
         eps = 0.000001 # small number that prevents zero under the logarithm
         p = 1.0 / (1.0 + numpy.exp(-X.dot(b) - a))
+        print('__calculate_log_likelihood p', p)
         return numpy.sum(y * numpy.log(p + eps) + (1.0 - y) * numpy.log(1.0 - p + eps))
 
     def __calculate_gradient(self, X, y):
