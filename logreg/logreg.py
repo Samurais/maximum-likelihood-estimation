@@ -10,8 +10,6 @@ class LogRegError(Exception):
     '''
     The exception class that we generate, if something goes wrong in the logistic regression.
     '''
-
-
     def __init__(self, error_msg=None):
         """ 
         A class constructor that is called automatically when creating class objects.
@@ -31,47 +29,52 @@ class LogRegError(Exception):
 
 
 class LogisticRegression:
-    """ Класс для классификатора на основе алгоритма логистической регрессии. """
+    '''
+    Class for the classifier based on the logistic regression algorithm.
+    '''
 
     def __init__(self):
-        """ Конструктор класса, вызываемый автоматически при создании объектов класса.
-        В конструкторе мы инициализируем все атрибуты класса "пустыми" значениями.
-        """
-        self.__a = None  # атрибут класса, который будет свободным членом логистической регрессии
-        self.__b = None  # атрибут класса, который будет numpy.ndarray-массивом коэффициентов логистической регрессии
-        self.__th = None  # атрибут класса, который будет вероятностным порогом для классификации
+        '''
+        A class constructor that is called automatically when creating class objects.
+        In the constructor, we initialize all the class attributes with "empty" values.
+        '''
+        self.__a = None # attribute of the class that will be a free member of the logistic regression
+        self.__b = None  # attribute of the class that will be a numpy.ndarray array of logistic regression coefficients
+        self.__th = None  # attribute of the class that will be the probabilistic threshold for classification
 
     def save(self, file_name):
-        """ Сохранить все параметры логистической регрессии (атрибуты класса) в текстовый файл.
-        :param file_name - строка с названием текстового файла, в который будут записаны сохраняемые параметры.
-        """
-        # сначала проверяем, есть ли что сохранять
+        '''
+        Save all logistic regression parameters (class attributes) to a text file.
+        : Param file_name - a string with the name of the text file, in which the saved parameters will be written.
+        '''
+        # First check if there is anything to save
         if (self.__a is None) or (self.__b is None) or (self.__th is None):
-            # если атрибуты класса пустые, т.е. сохранять нечего, то генерируем исключение
+            # If the class attributes are empty, i.e. There is nothing to save, then we throw an exception
             raise LogRegError('Parameters have not been specified!')
-        # открываем текстовый файл для записи
+        # Open a text file for writing
         with open(file_name, 'w') as fp:
-            # записываем размер входного вектора признаков
+            # Write the size of the input characteristic vector
             fp.write('Input size {0}\n\n'.format(self.__b.shape[0]))
-            # записываем коэффициенты логистической регрессии
+            # Write the coefficients of logistic regression
             for ind in range(self.__b.shape[0]):
                 fp.write('{0}\n'.format(self.__b[ind]))
-            # записываем свободный член и вероятностный порого
+            # Write the free term and the probabilistic threshold
             fp.write('\n{0}\n\n{1}\n'.format(self.__a, self.__th))
 
     def load(self, file_name):
-        """ Загрузить все параметры логистической регрессии из текстового файла в атрибуты класса.
-        :param file_name - строка с названием текстового файла, из которого будут читаться загружаемые параметры.
-        """
-        # открываем текстовый файл для чтения
+        '''
+        Load all the logistic regression parameters from the text file into the attributes of the class.
+        : Param file_name - a string with the name of the text file from which the downloaded parameters will be read.
+        '''
+        # Open a text file for reading
         with open(file_name, 'r') as fp:
-            input_size = -1  # размер входного вектора признаков (пока не прочитан, считается равным -1)
-            cur_line = fp.readline()  # читаем первую строку
-            ind = 0  # счётчик количества прочитанных параметров логистической регрессии
-            while len(cur_line) > 0:  # до тех пор, пока очередная строка не пуста, т.е. файл ещё не закончился
-                prepared_line = cur_line.strip()  # удаляем лишние пробелы из начала и конца строки
-                if len(prepared_line) > 0:  # если после удаления пробелов строка не пуста, то пытаемся её распарсить
-                    if input_size <= 0:  # если размер входного вектора признаков ещё не прочитан, то читаем его
+            input_size = -1 # the size of the input characteristic vector (until read, is set to -1)
+            cur_line = fp.readline()  # read the first line
+            ind = 0  # counter of the number of logistic regression parameters read
+            while len(cur_line) > 0:  # until the next line is empty, i.e. The file is not over yet
+                prepared_line = cur_line.strip()   # remove extra spaces from the beginning and end of the line
+                if len(prepared_line) > 0:  # if after removing spaces the line is not empty, then we try to parse it
+                    if input_size <= 0: # if the size of the input characteristic vector has not yet been read, then read it
                         parts_of_line = prepared_line.split()
                         if len(parts_of_line) != 3:
                             raise LogRegError('Parameters cannot be loaded from a file!')
@@ -83,104 +86,107 @@ class LogisticRegression:
                         self.__b = numpy.zeros(shape=(input_size,), dtype=numpy.float)
                         self.__a = 0.0
                         self.__th = 0.5
-                    else:  # если размер входного вектора признаков был уже прочитан, то читаем сами параметры регрессии
-                        if ind > (input_size + 1):  # в файле оказалось слишком много информации, это ошибка
+                    else:  # if the size of the input characteristic vector has already been read, then we read the regression parameters themselves
+                        if ind > (input_size + 1):  # the file contained too much information, this is an error
                             raise LogRegError('Parameters cannot be loaded from a file!')
-                        if ind < input_size:  # читаем ind-й коэффициент логистической регрессии из input_size штук
+                        if ind < input_size: # read ind-th logistic regression coefficient from input_size pieces
                             self.__b[ind] = float(prepared_line)
-                        elif ind == input_size:  # читаем свободный член логистической регрессии
+                        elif ind == input_size: # read the free member of the logistic regression
                             self.__a = float(prepared_line)
-                        else:  # читаем вероятностный порог (он не должен быть меньше 0 или больше 1)
+                        else:  # read the probability threshold (it should not be less than 0 or greater than 1)
                             self.__th = float(prepared_line)
                             if (self.__th < 0.0) or (self.__th > 1.0):
                                 raise LogRegError('Parameters cannot be loaded from a file!')
-                        ind += 1  # благополучно прочитали очередной параметр, и теперь увеличиваем счётчик
-                cur_line = fp.readline()  # читаем очередную строку из файла
+                        ind += 1 # safely read the next parameter, and now we increase the counter
+                cur_line = fp.readline() # read the next line from the file
             if ind <= (input_size + 1):
                 raise LogRegError('Parameters cannot be loaded from a file!')
 
     def transform(self, X):
-        """ Вычислить вероятности отнесения входных объектов к первому классу.
-        :param X - двумерный numpy.ndarray-массив, описывающий векторы признаков входных объектов
-        (одна строка - один вектор признаков, количество строк равно количеству входных объектов,
-        количество столбцов равно количеству признаков объекта).
-        :return одномерный numpy.ndarray-массив, описывающий вероятности отнесения входных объектов к первому классу
-        (число элементов этого массива равно количеству строк матрицы X, т.е. количеству входных объектов).
-        """
-        # проверить, что параметры логистической регресии (коэффициенты и свободный член) не являются "пустыми"
+        '''
+        Calculate the probabilities of assigning input objects to the first class.
+        : Param X - a two-dimensional numpy.ndarray-array that describes the vectors of attributes of input objects
+        (One line is one characteristic vector, the number of rows is equal to the number of input objects,
+        The number of columns is equal to the number of features of the object).
+        : Return one-dimensional numpy.ndarray-array that describes the probabilities of assigning input objects to the first class
+        (The number of elements of this array is equal to the number of rows of the matrix X, that is, the number of input objects).
+        '''
+        # Check that the logistic regression parameters (coefficients and free term) are not "empty"
         if (self.__a is None) or (self.__b is None):
             raise LogRegError('Parameters have not been specified!')
-        # проверить, что корректно задана входная матрица X
+        # Check that the input matrix X
         if (X is None) or ((not isinstance(X, numpy.ndarray)) and (not isinstance(X, scipy.sparse.spmatrix))) or\
                 (X.ndim != 2) or (X.shape[1] != self.__b.shape[0]):
             raise LogRegError('Input data are wrong!')
-        # вычислить искомый массив вероятностей
+        # Calculate the desired probability array
         return 1.0 / (1.0 + numpy.exp(-X.dot(self.__b) - self.__a))
 
     def predict(self, X):
-        """ Распознать, к какому из двух классов относятся входные объекты.
-        :param X - двумерный numpy.ndarray-массив, описывающий векторы признаков входных объектов
-        (одна строка - один вектор признаков, количество строк равно количеству входных объектов,
-        количество столбцов равно количеству признаков объекта).
-        :return одномерный numpy.ndarray-массив, описывающий результаты распознавания каждого из входных объектов в виде
-        1 (объект относится к первому классу) или 0 (объект относится ко второму классу). Число элементов этого массива
-        равно количеству строк матрицы X, т.е. количеству входных объектов.
-        """
+        '''
+        Recognize which of the two classes are the input objects.
+        : Param X - a two-dimensional numpy.ndarray-array that describes the vectors of attributes of input objects
+        (One line is one characteristic vector, the number of rows is equal to the number of input objects,
+        The number of columns is equal to the number of features of the object).
+        : Return one-dimensional numpy.ndarray-array that describes the results of recognition of each of the input objects in the form
+        1 (the object belongs to the first class) or 0 (the object belongs to the second class). The number of elements in this array
+        Is equal to the number of rows of X; The number of input objects.
+        '''
         return (self.transform(X) >= self.__th).astype(numpy.float)
 
     def fit(self, X, y, eps=0.001, lr_max=1.0, max_iters = 1000):
-        """ Обучить логистическую регрессию на заданном обучающем множестве градиентным методом.
-        :param X - двумерный numpy.ndarray-массив, описывающий векторы признаков входных объектов обучающего множества
-        (одна строка - один вектор признаков, количество строк равно количеству входных объектов, количество столбцов
-        равно количеству признаков объекта).
-        :param y - одномерный numpy.ndarray-массив, описывающий желаемые результаты распознавания каждого из входных
-        объектов обучающего множества в виде 1 (объект относится к первому классу) или 0 (объект относится ко второму
-        классу). Число элементов этого массива равно количеству строк матрицы X, т.е. количеству входных объектов.
-        :param eps - чувствительность алгоритма к изменению целевой функции (в нашем случае - логарифма функции
-        правдоподобия) после очередного шага алгоритма. Если новое значение целевой функции не превышает старое значение
-        более чем на eps либо же вообще меньше старого значения, то обучение прекращается.
-        :param lr_max - максимальная длина коэффициента скорости обучения (этот коэффициент будет адаптивным, т.е.
-        автоматически подбираться на каждом шаге в направлении градиента, и допустимый диапазон изменений - это
-        [0; lr_max]).
-        :param max_iters - максимальное число шагов (итераций) алгоритма обучения. Если алгоритм обучения выполнил
-        max_iters шагов, но изменения целевой функции по-прежнему велики, т.е. критерий останова не выполнен, то
-        обучение всё равно прекращается.
-        """
-        # проверяем, правильно ли задано обучающее множество (если нет, то генерируем исключение)
+        '''
+        Teach logistic regression on a given training set by a gradient method.
+        : Param X is a two-dimensional numpy.ndarray-array that describes the vectors of the attributes of the input objects of the learning set
+        (One line - one characteristic vector, the number of rows is equal to the number of input objects, the number of columns
+        Is equal to the number of features of the object).
+        : Param y - one-dimensional numpy.ndarray-array that describes the desired results of recognition of each of the input
+        Objects of the training set in the form 1 (the object belongs to the first class) or 0 (the object belongs to the second class)
+        Class). The number of elements of this array is equal to the number of rows of the matrix X, i.e. The number of input objects.
+        : Param eps - the sensitivity of the algorithm to the change in the objective function (in our case, the logarithm of the function
+        Likelihood) after the next step of the algorithm. If the new value of the objective function does not exceed the old value
+        More than on eps or even less than the old value, then the training stops.
+        : Param lr_max is the maximum length of the learning rate coefficient (this coefficient will be adaptive, i.e.
+        Automatically selected at each step in the direction of the gradient, and the allowable range of changes is
+        [0; Lr_max]).
+        : Param max_iters - the maximum number of steps (iterations) of the learning algorithm. If the learning algorithm is executed
+        Max_iters steps, but the changes in the objective function are still great, i.e. The stop criterion is not met, then
+        The training stops anyway.
+        '''
+        # Check whether the training set is set correctly (if not, generate an exception)
         if (X is None) or (y is None) or ((not isinstance(X, numpy.ndarray)) and
                                               (not isinstance(X, scipy.sparse.spmatrix))) or\
                 (X.ndim != 2) or (not isinstance(y, numpy.ndarray)) or (y.ndim != 1) or (X.shape[0] != y.shape[0]):
             raise LogRegError('Train data are wrong!')
-        # проверяем, правильно ли заданы параметры алгоритма обучения (если нет, то генерируем исключение)
+        # Check whether the parameters of the learning algorithm are set correctly (if not, we generate an exception)
         if (eps <= 0.0) or (lr_max <= 0.0) or (max_iters < 1):
             raise LogRegError('Train parameters are wrong!')
-        # инициализируем свободный член и коэффициенты регрессии случайными значениями
-        # случайные значения берутся из равномерного распределения [-0.5;0.5]
+        # Initialize the free member and regression coefficients with random values
+        # Random values ​​are taken from the uniform distribution [-0.5, 0.5]
         self.__a = numpy.random.rand(1)[0] - 0.5
         self.__b = numpy.random.rand(X.shape[1]) - 0.5
-        # вычисляем логарифм функции правдоподобия в начальной точке, т.е. сразу после инициализации
+        # Calculate the log of the likelihood function at the starting point, i.e. Immediately after initialization
         f_old = self.__calculate_log_likelihood(X, y, self.__a, self.__b)
         print('{0:>5}\t{1:>17.12f}'.format(0, f_old))
-        stop = False  # флажок, определяющий, выполнен ли критерий останова (сначала он не выполнен, разумеется)
-        iterations_number = 1  # счётчик числа шагов (итераций) алгоритма
-        while not stop:  # пока не выполнен критерий останова, продолжаем обучение
-            gradient = self.__calculate_gradient(X, y)  # вычисляем градиент в текущей точке
-            lr = self.__find_best_lr(X, y, gradient, lr_max)  # вычисляем оптимальный шаг в направлении градиента
-            self.__a = self.__a + lr * gradient[0]  # корректируем свободный член логистической регрессии
-            self.__b = self.__b + lr * gradient[1]  # корректируем коэффициенты логистической регрессии
-            # логарифм функции правдоподобия в новой точке (с новым свободным членом и новыми коэффициентами регрессии)
+        stop = False  # A flag indicating whether the stop criterion is fulfilled (at first it is not executed, of course)
+        iterations_number = 1  # count of the number of steps (iterations) of the algorithm
+        while not stop:  # until the break criterion is fulfilled, continue training
+            gradient = self.__calculate_gradient(X, y)  # calculate the gradient at the current point
+            lr = self.__find_best_lr(X, y, gradient, lr_max)  # calculate the optimal step in the gradient direction
+            self.__a = self.__a + lr * gradient[0]  # correct the free member of the logistic regression
+            self.__b = self.__b + lr * gradient[1]  # correct logistic regression coefficients
+            # Logarithm of the likelihood function at a new point (with a new free term and new regression coefficients)
             f_new = self.__calculate_log_likelihood(X, y, self.__a, self.__b)
             print('{0:>5}\t{1:>17.12f}'.format(iterations_number, f_new))
-            # если логарифм функции правдоподобия увеличился чуть-чуть или даже уменьшился, то всё, хватит обучаться
+            # If the log of the likelihood function has increased slightly or even decreased, then all is enough to learn
             if (f_new - f_old) < eps:
                 stop = True
-            # если логарифм функции правдоподобия увеличился существенно, то проверяем число шагов алгоритма
+            # If the log-likelihood of the likelihood function has increased substantially, then we check the number of steps of the algorithm
             else:
                 f_old = f_new
-                iterations_number += 1  # увеличиваем счётчик числа шагов
-                if iterations_number >= max_iters:  # если число шагов алгоритма слишком велико, то всё
+                iterations_number += 1  # increase the number of steps count
+                if iterations_number >= max_iters:  # if the number of steps in the algorithm is too large, then all
                     stop = True
-        # выводим на экран причину, по которой завершился алгоритм обучения
+        # Display the reason why the learning algorithm was completed
         if iterations_number < max_iters:
             print('The algorithm is stopped owing to very small changes of log-likelihood function.')
         else:
@@ -188,58 +194,61 @@ class LogisticRegression:
         self.__th = self.__calc_best_th(y, self.transform(X))
 
     def __calculate_log_likelihood(self, X, y, a, b):
-        """ Вычислить логарифм функции правдоподобия на заданном обучающем множестве для заданных параметров регрессии
-        (т.е. здесь в качестве параметров регрессии - свободного члена и коэффициентов - используются соответствующие
-        аргументы метода, а не атрибуты класса self.__a и self.__b).
-        :param X - двумерный numpy.ndarray-массив, описывающий векторы признаков входных объектов обучающего множества
-        (одна строка - один вектор признаков, количество строк равно количеству входных объектов, количество столбцов
-        равно количеству признаков объекта).
-        :param y - одномерный numpy.ndarray-массив, описывающий желаемые результаты распознавания каждого из входных
-        объектов обучающего множества в виде 1 (объект относится к первому классу) или 0 (объект относится ко второму
-        классу). Число элементов этого массива равно количеству строк матрицы X, т.е. количеству входных объектов.
-        :param a - свободный член логистической регрессии.
-        :param b - одномерный numpy.ndarray-массив коэффициентов логистической регрессии.
-        :return Логарифм функции правдоподобия.
-        """
-        eps = 0.000001  # малое число, предотвращающее появление нуля под логарифмом
+        '''
+        Calculate the logarithm of the likelihood function on a given training set for given regression parameters
+        (Ie here as regression parameters - free term and coefficients - the corresponding
+        Method arguments, not the attributes of the class self .__ a and self .__ b).
+        : Param X is a two-dimensional numpy.ndarray-array that describes the vectors of the attributes of the input objects of the learning set
+        (One line - one characteristic vector, the number of rows is equal to the number of input objects, the number of columns
+        Is equal to the number of features of the object).
+        : Param y - one-dimensional numpy.ndarray-array that describes the desired results of recognition of each of the input
+        Objects of the training set in the form 1 (the object belongs to the first class) or 0 (the object belongs to the second class)
+        Class). The number of elements of this array is equal to the number of rows of the matrix X, i.e. The number of input objects.
+        : Param a is the free member of the logistic regression.
+        : Param b - one-dimensional numpy.ndarray-array of logistic regression coefficients.
+        : Return The logarithm of the likelihood function.
+        '''
+        eps = 0.000001 # small number that prevents zero under the logarithm
         p = 1.0 / (1.0 + numpy.exp(-X.dot(b) - a))
         return numpy.sum(y * numpy.log(p + eps) + (1.0 - y) * numpy.log(1.0 - p + eps))
 
     def __calculate_gradient(self, X, y):
-        """ Вычислить градиент от логарифма функции правдоподобия на заданном обучающем множестве.
-        :param X - двумерный numpy.ndarray-массив, описывающий векторы признаков входных объектов обучающего множества
-        (одна строка - один вектор признаков, количество строк равно количеству входных объектов, количество столбцов
-        равно количеству признаков объекта).
-        :param y - одномерный numpy.ndarray-массив, описывающий желаемые результаты распознавания каждого из входных
-        объектов обучающего множества в виде 1 (объект относится к первому классу) или 0 (объект относится ко второму
-        классу). Число элементов этого массива равно количеству строк матрицы X, т.е. количеству входных объектов.
-        :return Градиент от логарифма функции правдоподобия, представленный в виде двухэлементного кортежа, первым
-        элементом которого является частная производная по свободному члену регрессии (вещественное число), а вторым
-        элементом - вектор частных производных по соответствующим коэффициентам регрессии (одномерный
-        numpy.ndarray-массив вещественных чисел).
-        """
+        '''
+        Calculate the gradient from the log of the likelihood function on the given training set.
+        : Param X is a two-dimensional numpy.ndarray-array that describes the vectors of the attributes of the input objects of the learning set
+        (One line - one characteristic vector, the number of rows is equal to the number of input objects, the number of columns
+        Is equal to the number of features of the object).
+        : Param y - one-dimensional numpy.ndarray-array that describes the desired results of recognition of each of the input
+        Objects of the training set in the form 1 (the object belongs to the first class) or 0 (the object belongs to the second class)
+        Class). The number of elements of this array is equal to the number of rows of the matrix X, i.e. The number of input objects.
+        : Return The gradient from the log of the likelihood function, represented as a two-element tuple, is the first
+        The element of which is the partial derivative with respect to the free regression term (real number), and the second
+        Element - the vector of partial derivatives with respect to the corresponding regression coefficients (one-dimensional
+        Numpy.ndarray-array of real numbers).
+        '''
         p = 1.0 / (1.0 + numpy.exp(-X.dot(self.__b) - self.__a))
         da = numpy.sum(y - p)
         db = X.transpose().dot(y - p)
         return (da, db)
 
     def __find_best_lr(self, X, y, gradient, lr_max):
-        """ По методу золотого сечения найти оптимальный шаг изменения параметров регрессии в направлении градиента
-        (т.е. оптимальный коэффициент скорости обучения).
-        :param X - двумерный numpy.ndarray-массив, описывающий векторы признаков входных объектов обучающего множества
-        (одна строка - один вектор признаков, количество строк равно количеству входных объектов, количество столбцов
-        равно количеству признаков объекта).
-        :param y - одномерный numpy.ndarray-массив, описывающий желаемые результаты распознавания каждого из входных
-        объектов обучающего множества в виде 1 (объект относится к первому классу) или 0 (объект относится ко второму
-        классу). Число элементов этого массива равно количеству строк матрицы X, т.е. количеству входных объектов.
-        :param gradient - градиент от логарифма функции правдоподобия, представленный в виде двухэлементного кортежа,
-        первым элементом которого является частная производная по свободному члену регрессии (вещественное число), а
-        вторым элементом - вектор частных производных по соответствующим коэффициентам регрессии (одномерный
-        numpy.ndarray-массив вещественных чисел).
-        :param lr_max - максимально допустимый коэффициент скорости обучения, т.е. верхняя граница диапазона поиска
-        оптимальной величины этого коэффициента (нижняя граница всегда равна нулю).
-        :return Оптимальная величина коэффициента скорости обучения (вещественное число).
-        """
+        '''
+        By the method of the golden section, find the optimal step of changing the regression parameters in the direction of the gradient
+        (I.e., the optimum learning rate coefficient).
+        : Param X is a two-dimensional numpy.ndarray-array that describes the vectors of the attributes of the input objects of the learning set
+        (One line - one characteristic vector, the number of rows is equal to the number of input objects, the number of columns
+        Is equal to the number of features of the object).
+        : Param y - one-dimensional numpy.ndarray-array that describes the desired results of recognition of each of the input
+        Objects of the training set in the form 1 (the object belongs to the first class) or 0 (the object belongs to the second class)
+        Class). The number of elements of this array is equal to the number of rows of the matrix X, i.e. The number of input objects.
+        : Param gradient - the gradient from the logarithm of the likelihood function, represented as a two-element tuple,
+        The first element of which is the partial derivative with respect to the free regression term (real number), and
+        The second element is the vector of partial derivatives with respect to the corresponding regression coefficients (one-dimensional
+        Numpy.ndarray-array of real numbers).
+        : Param lr_max is the maximum permissible rate of learning, i.e. Upper limit of search range
+        The optimal value of this coefficient (the lower bound is always zero).
+        : Return The optimal value of the learning speed coefficient (real number).
+        '''
         lr_min = 0.0
         theta = (1.0 + math.sqrt(5.0)) / 2.0
         eps = 0.00001 * (lr_max - lr_min)
@@ -288,42 +297,43 @@ class LogisticRegression:
         return best_th
 
 def load_mnist_for_demo(sparse=False):
-    """ Загрузить данные корпуса MNIST, чтобы продемонстрировать применение логистической регрессии для распознавания
-    рукописных цифр от 0 до 9 (всего десять классов, 60 тыс. обучающих картинок и 10 тыс. тестовых картинок).
-    :param sparse - флаг, показывающий, представлять ли множество векторов признаков в виде разреженной матрицы
-    scipy.sparse.csr_matrix или же в виде обычной матрицы numpy.ndarray.
-    :return Кортеж из двух элементов: обучающего и тестового множества. Каждое из множеств - как обучающее, так и
-    тестовое - тоже задаётся в виде двухэлементого кортежа, первым элементом которого является множество векторов
-    признаков входных объектов (двумерный numpy.ndarray-массив, число строк в котором равно числу входных объектов, а
-    число столбцов равно количеству признаков объекта), а вторым элементом - множество желаемых выходных сигналов для
-    каждого из соответствующих входных объектов (одномерный numpt.ndarray-массив, число элементов в котором равно числу
-    входных объектов).
-    """
-    from sklearn.datasets import fetch_mldata  # импортируем специальный модуль из библиотеки ScikitLearn
-    # загружаем MNIST из текущей директории или Интернета, если в текущей директории этих данных нет
+    '''
+    Load MNIST data to demonstrate the use of logistic regression for recognition
+    Handwritten figures from 0 to 9 (total ten classes, 60 thousand teaching pictures and 10 thousand test pictures).
+    : Param sparse - a flag indicating whether to represent a set of feature vectors in the form of a sparse matrix
+    Scipy.sparse.csr_matrix or as an ordinary matrix numpy.ndarray.
+    : Return A tuple of two elements: a learning set and a test set. Each of the sets - both teaching and
+    Test - is also specified as a two-element tuple, the first element of which is a set of vectors
+    Attributes of input objects (two-dimensional numpy.ndarray-array, the number of rows in which is equal to the number of input objects, and
+    The number of columns is equal to the number of features of the object), and the second element is the set of desired output signals for
+    Each of the corresponding input objects (one-dimensional numpt.ndarray-array, the number of elements in which is equal to the number
+    Input objects).
+    '''
+    from sklearn.datasets import fetch_mldata  # import a special module from the library ScikitLearn
+    # Load MNIST from the current directory or the Internet, if in the current directory of this data there is no
     mnist = fetch_mldata('MNIST original', data_home='.')
-    # получаем и нормируем вектора признаков для первых 60 тыс. картинок из MNIST, используемых для обучения
-    # (матрица яркостей пикселей 28x28 -> одномерный вектор 784 признаков)
+    # We get and normalize the feature vectors for the first 60 thousand pictures from MNIST used for training
+    # (Pixel brightness matrix 28x28 -> one-dimensional feature vector 784)
     if sparse:
         X_train = scipy.sparse.csr_matrix(mnist.data[0:60000].astype(numpy.float) / 255.0)
     else:
         X_train = mnist.data[0:60000].astype(numpy.float) / 255.0
-    y_train = mnist.target[0:60000]  # получаем желаемые выходы (цифры от 0 до 9) для 60 тыс. обучающих картинок
-    # получаем и нормируем вектора признаков для следующих 10 тыс. картинок из MNIST, используемых для тестирования
-    # (матрица яркостей пикселей 28x28 -> одномерный вектор 784 признаков)
+    y_train = mnist.target[0:60000]  # get the desired outputs (numbers from 0 to 9) for 60,000 training pictures
+    # We get and normalize the feature vectors for the next 10 thousand pictures from MNIST used for testing
+    # (Pixel brightness matrix 28x28 -> one-dimensional feature vector 784)
     if sparse:
         X_test = scipy.sparse.csr_matrix(mnist.data[60000:].astype(numpy.float) / 255.0)
     else:
         X_test = mnist.data[60000:].astype(numpy.float) / 255.0
-    y_test = mnist.target[60000:]  # получаем желаемые выходы (цифры от 0 до 9) для 10 тыс. тестовых картинок
+    y_test = mnist.target[60000:]  # get the desired outputs (numbers from 0 to 9) for 10 thousand test images
     return ((X_train, y_train), (X_test, y_test))
 
 
 if __name__ == '__main__':
-    # если мы используем этот модуль как главный, а не просто как Python-библиотеку, то запускаем демо-пример на MNIST
-    import os.path  # импортируем стандартный модуль для работы с файлами
-    train_set, test_set = load_mnist_for_demo(True)  # загружаем обучающие и тестовые данные MNIST
-    # для 10-классовой классификации создаём 10 бинарных (2-классовых) классификаторов на основе логистической регрессии
+    # If we use this module as the main module, and not just as a Python library, then run the demo on MNIST
+    import os.path  # we import a standard module for working with files
+    train_set, test_set = load_mnist_for_demo(True)  # load learning and test data MNIST
+    # For 10-class classification create 10 binary (2-class) classifiers based on logistic regression
     classifiers = list()
     for recognized_class in range(10):
         classifier_name = 'log_reg_for_MNIST_{0}.txt'.format(recognized_class)
@@ -334,14 +344,14 @@ if __name__ == '__main__':
             new_classifier.fit(train_set[0], (train_set[1] == recognized_class).astype(numpy.float))
             new_classifier.save(classifier_name)
         classifiers.append(new_classifier)
-    # на тестовом множестве вычисляем результаты распознавания цифр коллективом из 10 обученных логистических регрессий
-    # (принцип принятия решений таким коллективом: входной вектор признаков считается отнесённым к тому классу, чья
-    # логистическая регрессия выдала наибольшую вероятность).
+    # On the test set, we calculate the results of recognition of figures by a team of 10 trained logistic regressions
+    # (The principle of decision making by such a collective: the input vector of attributes is considered to be related to that class whose
+    # Logistic regression gave the highest probability).
     n_test_samples = test_set[0].shape[0]
     outputs = numpy.empty((n_test_samples, 10), dtype=numpy.float)
     for recognized_class in range(10):
         outputs[:, recognized_class] = classifiers[recognized_class].transform(test_set[0])
     results = outputs.argmax(1)
-    # сравниваем полученные результаты с эталонными и оцениваем процент ошибок коллектива логистических регрессий
+    # Compare the results obtained with the reference ones and estimate the percentage of errors of the collective of logistic regressions
     n_errors = numpy.sum(results != test_set[1])
     print('Errors on test set: {0:%}'.format(float(n_errors) / float(n_test_samples)))

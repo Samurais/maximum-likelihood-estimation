@@ -1,2 +1,4 @@
 logreg/mldata
 tmp/
+log_reg_for_MNIST*
+mldata/
