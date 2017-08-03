@@ -9,3 +9,5 @@ https://github.com/Samurais/maxlike
 https://github.com/Samurais/Natural-Language-Processing-Language-Model
 
 Implemented a language model for a class project in Python which uses Maximum Likelihood Estimation and Laplace Smoothing to automatically generate language.
+
+## [](./logreg)
