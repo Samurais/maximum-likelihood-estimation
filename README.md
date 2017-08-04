@@ -17,3 +17,6 @@ Implemented a language model for a class project in Python which uses Maximum Li
 ```
 python linear_regression_tensorflow.py
 ```
+
+## L2 regularization
+TODO http://blog.smellthedata.com/2009/06/python-logistic-regression-with-l2.html

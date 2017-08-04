@@ -229,8 +229,8 @@ class LogisticRegression:
     def __calculate_log_likelihood(self, X, y, a, b):
         '''
         Calculate the logarithm of the likelihood function on a given training set for given regression parameters
-        (Ie here as regression parameters - free term and coefficients - the corresponding
-        Method arguments, not the attributes of the class self .__ a and self .__ b).
+        (ie here as regression parameters - free term and coefficients - the corresponding
+        Method arguments, not the attributes of the class self.__ a and self.__ b).
         : Param X is a two-dimensional numpy.ndarray-array that describes the vectors of the attributes of the input objects of the learning set
         (One line - one characteristic vector, the number of rows is equal to the number of input objects, the number of columns
         Is equal to the number of features of the object).
@@ -242,8 +242,12 @@ class LogisticRegression:
         : Return The logarithm of the likelihood function.
         '''
         eps = 0.000001 # small number that prevents zero under the logarithm
-        p = 1.0 / (1.0 + numpy.exp(-X.dot(b) - a))
+        p = 1.0 / (1.0 + numpy.exp(-X.dot(b) - a)) # FIXME why p is computed in this way? this is logistic sigmoid function
+                                                   # and wildly used to generate param for Bernoulli Distribution.
         print('__calculate_log_likelihood p', p)
+        print('__calculate_log_likelihood y', y)
+        # binomial loglikelihood
+        # https://onlinecourses.science.psu.edu/stat504/node/27
         return numpy.sum(y * numpy.log(p + eps) + (1.0 - y) * numpy.log(1.0 - p + eps))
 
     def __calculate_gradient(self, X, y):
